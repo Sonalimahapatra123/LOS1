@@ -33,7 +33,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image... 
-      - appVersion=$(cat version.txt )
+      #- appVersion=$(cat version.txt )
       - timestamp=$(date -u '+%Y-%m-%d_%H-%M-%S_%Z')
       - buildID=$(echo $CODEBUILD_BUILD_ID | awk -F':' '{print $2}')
       - srcVer=$CODEBUILD_SOURCE_VERSION
@@ -44,8 +44,8 @@ phases:
         if [ "$indx" -eq 0 ]; then
         srcVer=$CODEBUILD_RESOLVED_SOURCE_VERSION
         fi
-      - artifactversion=$(echo $appVersion.$buildID.$srcVer.$timestamp)
-      - buildversion=$(echo $appVersion.$buildID.$srcVer.$timestamp)
+      - artifactversion=$(echo $buildID.$srcVer.$timestamp)
+      - buildversion=$(echo $buildID.$srcVer.$timestamp)
       - artifactname=$(echo $artifactversion.tar.gz)
       - tar -zcvf $artifactname *
       - aws s3 cp $artifactname s3://bucketkops/los/ --sse
