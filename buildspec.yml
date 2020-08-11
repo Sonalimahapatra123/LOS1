@@ -31,25 +31,26 @@ phases:
         #fi      
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image... 
+       - aws s3 cp . s3://bucketkops/los 
+      #- echo Build started on `date`
+      #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
-      - echo `pwd`
-      - timestamp=$(date -u '+%Y-%m-%d_%H-%M-%S_%Z')
-      - buildID=$(echo $CODEBUILD_BUILD_ID | awk -F':' '{print $2}')
-      - srcVer=$CODEBUILD_SOURCE_VERSION
-      - echo $srcVer
-      - echo $CODEBUILD_RESOLVED_SOURCE_VERSION
+      #- echo `pwd`
+      #- timestamp=$(date -u '+%Y-%m-%d_%H-%M-%S_%Z')
+      #- buildID=$(echo $CODEBUILD_BUILD_ID | awk -F':' '{print $2}')
+      #- srcVer=$CODEBUILD_SOURCE_VERSION
+      #- echo $srcVer
+      #- echo $CODEBUILD_RESOLVED_SOURCE_VERSION
       #- echo "printing the branch name $GITHUB_BRANCH_NAME"
       #- indx=$(echo $CODEBUILD_SOURCE_VERSION | grep -q ^arn ; echo $?)
        # if [ "$indx" -eq 0 ]; then
         #srcVer=$CODEBUILD_RESOLVED_SOURCE_VERSION
         #fi
-      - artifactversion=$(echo $buildID.$srcVer.$timestamp)
-      - buildversion=$(echo $buildID.$srcVer.$timestamp)
-      - artifactname=$(echo $artifactversion.tar.gz)
-      - tar -zcvf $artifactname *
-      - aws s3 cp $artifactname s3://bucketkops/los/ --sse
+      #- artifactversion=$(echo $buildID.$srcVer.$timestamp)
+      #- buildversion=$(echo $buildID.$srcVer.$timestamp)
+      #- artifactname=$(echo $artifactversion.tar.gz)
+      #- tar -zcvf $artifactname *
+      #- aws s3 cp $artifactname s3://bucketkops/los/ --sse
       - aws s3api put-object --bucket bucketkops --key los/$artifactname --body $artifactname
       #- aws cloudformation create-stack --stack-name teststack --template-body file://simples3cft.json --region 'us-east-1'
       #- aws cloudformation create-stack --stack-name tests3stack --template-body file://tests3cft.json --region 'us-east-1' 
