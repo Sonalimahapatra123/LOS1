@@ -51,7 +51,7 @@ phases:
       #- artifactname=$(echo $artifactversion.tar.gz)
       #- tar -zcvf $artifactname *
       #- aws s3 cp $artifactname s3://bucketkops/los/ --sse
-      - aws s3api put-object --bucket bucketkops --key los/$artifactname --body $artifactname
+      #- aws s3api put-object --bucket bucketkops --key los/$artifactname --body $artifactname
       #- aws cloudformation create-stack --stack-name teststack --template-body file://simples3cft.json --region 'us-east-1'
       #- aws cloudformation create-stack --stack-name tests3stack --template-body file://tests3cft.json --region 'us-east-1' 
       #- aws cloudformation update-stack --stack-name teststack --template-body file://simples3cft.json --region 'us-east-1'
