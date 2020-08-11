@@ -34,6 +34,7 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
+      - echo `pwd`
       - timestamp=$(date -u '+%Y-%m-%d_%H-%M-%S_%Z')
       - buildID=$(echo $CODEBUILD_BUILD_ID | awk -F':' '{print $2}')
       - srcVer=$CODEBUILD_SOURCE_VERSION
