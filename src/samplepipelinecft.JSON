@@ -1,0 +1,391 @@
+{
+   "AWSTemplateFormatVersion": "2010-09-09",
+   "Description": "AWS CloudFormation Template: Creates a codepipeline for ml docker image deployments",
+   "Parameters": {
+      "RepositoryName": {
+         "Description": "The name of the Github repo",
+         "Type": "String",
+         "Default": "demo-repository",
+         "AllowedPattern": "[\\x20-\\x7E]*",
+         "ConstraintDescription": "Can contain only ASCII characters."
+      },
+      "RepositoryBranch": {
+         "Description": "The name of the branch for the Githubrepo",
+         "Type": "String",
+         "Default": "master",
+         "AllowedPattern": "[\\x20-\\x7E]*",
+         "ConstraintDescription": "Can contain only ASCII characters."
+      },
+      "GithubToken": {
+         "Description": "Github OAuth Token with full permissions on admin:repo_hook and repo",
+         "Type": "AWS::SSM::Parameter::Value<String>",
+         "NoEcho": "true",
+         "Default": "githubtoken"
+      },
+      "CodepipelineArtifactBucket": {
+         "Type": "String",
+         "Default": "codepipeline-us-east-1-966167899962",
+         "Description": "Enter the bucket name where the Codepipeline stage artifacts stores"
+      },
+      "ApplicationName": {
+         "Type": "String",
+         "Default": "NDS-CYNC-DEV-Ror-Application",
+         "Description": "Enter the existing code deploy application name."
+      },
+      "DeploymentGroup": {
+         "Type": "String",
+         "Default": "NDS-CYNC-DEV-Ror",
+         "Description": "Enter the existing code deployment gorup name."
+      },
+      "InstanceName": {
+         "Description": "Instance Tag Name for CodeDeploy",
+         "Type": "String",
+         "Default": "NDS-CYNC-DEV-Ansible-Jumphost-New",
+         "AllowedPattern": "[\\x20-\\x7E]*",
+         "ConstraintDescription": "Can contain only ASCII characters."
+      },
+      "GitHubOwner": {
+         "Type": "String",
+         "Default": "idexcel-technologies-pvt-ltd"
+      }
+   },
+   "Metadata": {
+      "AWS::CloudFormation::Interface": {
+         "ParameterGroups": [
+            {
+               "Label": {
+                  "default": "Github Details"
+               },
+               "Parameters": [
+                  "RepositoryName",
+                  "RepositoryBranch",
+                  "GitHubOwner"
+               ]
+            },
+            {
+               "Label": {
+                  "default": "CodeDeploy Details"
+               },
+               "Parameters": [
+                  "CodeDeployApplicationName",
+                  "CodeDeploymentGroupName",
+                  "InstanceName"
+               ]
+            },
+            {
+               "Label": {
+                  "default": "CodePipeline Details"
+               },
+               "Parameters": [
+                  "ArtifactBucket",
+                  "CodeBuildDescription"
+               ]
+            }
+         ]
+      }
+   },
+   "Resources": {
+      "ArtifactsBucket": {
+         "Type": "AWS::S3::Bucket",
+         "Properties": {
+            "BucketName": null,
+            "BucketEncryption": {
+               "ServerSideEncryptionConfiguration": [
+                  {
+                     "ServerSideEncryptionByDefault": {
+                        "SSEAlgorithm": "AES256"
+                     }
+                  }
+               ]
+            }
+         }
+      },
+      "IAMCodePipelineRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Statement": [
+                  {
+                     "Effect": "Allow",
+                     "Principal": {
+                        "Service": [
+                           "codepipeline.amazonaws.com"
+                        ]
+                     },
+                     "Action": [
+                        "sts:AssumeRole"
+                     ]
+                  }
+               ]
+            },
+            "Path": "/",
+            "Policies": [
+               {
+                  "PolicyName": "codepipeline-service",
+                  "PolicyDocument": {
+                     "Statement": [
+                        {
+                           "Action": [
+                              "codedeploy:CreateDeployment",
+                              "codedeploy:GetApplicationRevision",
+                              "codedeploy:RegisterApplicationRevision",
+                              "codedeploy:GetDeploymentConfig",
+                              "codedeploy:GetDeployment"
+                           ],
+                           "Resource": [
+                              {
+                                 "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:application:${ApplicationName}"
+                              },
+                              {
+                                 "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentgroup:${ApplicationName}/${DeploymentGroup}"
+                              },
+                              {
+                                 "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:instance:*"
+                              },
+                              {
+                                 "Fn::Sub": "arn:aws:codedeploy:${AWS::Region}:${AWS::AccountId}:deploymentconfig:*"
+                              }
+                           ],
+                           "Effect": "Allow"
+                        },
+                        {
+                           "Action": "codedeploy:ContinueDeployment",
+                           "Resource": "*",
+                           "Effect": "Allow"
+                        },
+                        {
+                           "Action": [
+                              "s3:GetObject",
+                              "s3:GetObjectVersion"
+                           ],
+                           "Resource": [
+                              {
+                                 "Fn::Sub": "arn:aws:s3:::${CodepipelineArtifactBucket}/*"
+                              }
+                           ],
+                           "Effect": "Allow"
+                        },
+                        {
+                           "Action": [
+                              "s3:ListBucket",
+                              "s3:GetBucketVersioning"
+                           ],
+                           "Resource": [
+                              {
+                                 "Fn::Sub": "arn:aws:s3:::${CodepipelineArtifactBucket}"
+                              }
+                           ],
+                           "Effect": "Allow"
+                        },
+                        {
+                           "Action": "s3:PutObject",
+                           "Resource": {
+                              "Fn::Sub": "arn:aws:s3:::${CodepipelineArtifactBucket}/*"
+                           },
+                           "Effect": "Allow"
+                        },
+                        {
+                           "Effect": "Allow",
+                           "Action": [
+                              "codepipeline:PutJobSuccessResult",
+                              "codepipeline:PutJobFailureResult"
+                           ],
+                           "Resource": [
+                              "*"
+                           ]
+                        },
+                        {
+                           "Effect": "Allow",
+                           "Action": "s3:PutObject",
+                           "Resource": {
+                              "Fn::Join": [
+                                 "",
+                                 "- 'arn:aws:s3:::'\n- Ref: CodepipelineArtifactBucket\n- /*"
+                              ]
+                           }
+                        }
+                     ],
+                     "Version": "2012-10-17"
+                  }
+               }
+            ]
+         }
+      },
+      "MyApplication": {
+         "Type": "AWS::CodeDeploy::Application",
+         "Properties": {
+            "ApplicationName": {
+               "Ref": "ApplicationName"
+            }
+         }
+      },
+      "IAMCodeDeployRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+               "Statement": [
+                  {
+                     "Effect": "Allow",
+                     "Principal": {
+                        "Service": [
+                           "codedeploy.amazonaws.com"
+                        ]
+                     },
+                     "Action": [
+                        "sts:AssumeRole"
+                     ]
+                  }
+               ]
+            },
+            "Path": "/",
+            "Policies": [
+               {
+                  "PolicyName": "codedeploy-service",
+                  "PolicyDocument": {
+                     "Version": "2012-10-17",
+                     "Statement": [
+                        {
+                           "Effect": "Allow",
+                           "Action": [
+                              "cloudwatch:DescribeAlarms",
+                              "cloudwatch:PutMetricAlarm"
+                           ],
+                           "Resource": "*"
+                        },
+                        {
+                           "Effect": "Allow",
+                           "Action": [
+                              "ec2:DescribeInstances",
+                              "ec2:DescribeInstanceStatus",
+                              "tag:GetTags",
+                              "tag:GetResources"
+                           ],
+                           "Resource": "*"
+                        }
+                     ]
+                  }
+               }
+            ]
+         }
+      },
+      "MyDeploymentGroup": {
+         "Type": "AWS::CodeDeploy::DeploymentGroup",
+         "DependsOn": "IAMCodeDeployRole",
+         "Properties": {
+            "ApplicationName": {
+               "Ref": "ApplicationName"
+            },
+            "DeploymentGroupName": {
+               "Ref": "DeploymentGroup"
+            },
+            "DeploymentStyle": {
+               "DeploymentOption": "WITHOUT_TRAFFIC_CONTROL",
+               "DeploymentType": "IN_PLACE"
+            },
+            "Ec2TagFilters": [
+               {
+                  "Key": "Name",
+                  "Value": {
+                     "Ref": "InstanceName"
+                  },
+                  "Type": "KEY_AND_VALUE"
+               }
+            ],
+            "ServiceRoleArn": {
+               "Fn::GetAtt": [
+                  "IAMCodeDeployRole",
+                  "Arn"
+               ]
+            }
+         }
+      },
+      "CodePipeline": {
+         "Type": "AWS::CodePipeline::Pipeline",
+         "DependsOn": "IAMCodePipelineRole",
+         "Properties": {
+            "RoleArn": {
+               "Fn::GetAtt": [
+                  "IAMCodePipelineRole",
+                  "Arn"
+               ]
+            },
+            "Stages": [
+               {
+                  "Name": "Source",
+                  "Actions": [
+                     {
+                        "Name": "Source",
+                        "ActionTypeId": {
+                           "Category": "Source",
+                           "Owner": "ThirdParty",
+                           "Version": "1",
+                           "Provider": "GitHub"
+                        },
+                        "OutputArtifacts": [
+                           {
+                              "Name": {
+                                 "Fn::Sub": "${AWS::StackName}-Source"
+                              }
+                           }
+                        ],
+                        "Configuration": {
+                           "Owner": {
+                              "Ref": "GitHubOwner"
+                           },
+                           "OAuthToken": null,
+                           "Branch": {
+                              "Ref": "RepositoryBranch"
+                           },
+                           "Repo": {
+                              "Ref": "RepositoryName"
+                           },
+                           "PollForSourceChanges": "true"
+                        },
+                        "RunOrder": 1
+                     }
+                  ]
+               },
+               {
+                  "Name": "CodeDeploy",
+                  "Actions": [
+                     {
+                        "InputArtifacts": [
+                           {
+                              "Name": {
+                                 "Fn::Sub": "${AWS::StackName}-Source"
+                              }
+                           }
+                        ],
+                        "Name": {
+                           "Ref": "ApplicationName"
+                        },
+                        "ActionTypeId": {
+                           "Category": "Deploy",
+                           "Owner": "AWS",
+                           "Version": "1",
+                           "Provider": "CodeDeploy"
+                        },
+                        "OutputArtifacts": [],
+                        "Configuration": {
+                           "ApplicationName": {
+                              "Ref": "ApplicationName"
+                           },
+                           "DeploymentGroupName": {
+                              "Ref": "DeploymentGroup"
+                           }
+                        },
+                        "RunOrder": 1
+                     }
+                  ]
+               }
+            ],
+            "ArtifactStore": {
+               "Type": "S3",
+               "Location": {
+                  "Ref": "CodepipelineArtifactBucket"
+               }
+            }
+         }
+      }
+   }
+}
