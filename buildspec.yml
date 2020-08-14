@@ -31,9 +31,10 @@ phases:
         #fi      
   build:
     commands:
-       - git rev-parse HEAD
+      #- git rev-parse HEAD
        - aws s3 ls
-       - aws s3 cp --recursive . s3://bucketkops/los 
+       - aws s3 sync . s3://bucketkops/los
+      #- aws s3 cp --recursive . s3://bucketkops/los 
       #- echo Build started on `date`
       #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
