@@ -34,7 +34,7 @@ phases:
       #- git rev-parse HEAD
       # - aws s3 ls
       # - aws s3 sync . s3://bucketkops/los
-       - aws s3 sync newfiles s3://bucketkops/los
+       - aws s3 sync newdir s3://bucketkops/los
       # - aws s3 cp --recursive . s3://bucketkops/test
       #- echo Build started on `date`
       #- echo Building the Docker image... 
