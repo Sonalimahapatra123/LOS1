@@ -36,7 +36,7 @@ phases:
         - aws s3 rsync --ignore-existing . s3://bucketkops/los
       # - aws s3 sync . s3://bucketkops/los
       # - aws s3 sync newdir s3://bucketkops/los
-       - aws s3 cp --recursive . s3://bucketkops/los
+      # - aws s3 cp --recursive . s3://bucketkops/los
       #- echo Build started on `date`
       #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
