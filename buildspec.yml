@@ -33,6 +33,7 @@ phases:
     commands:
       #- git rev-parse HEAD
        - echo `pwd`
+       - echo `ls`
        - aws s3 cp --no-overwrite s3://bucketkops/los
       #- aws s3 ls
       #- aws s3 sync --ignore-existing . s3://bucketkops/los
