@@ -32,12 +32,13 @@ phases:
   build:
     commands:
       #- git rev-parse HEAD
-       - aws s3 sync --no-overwrite . s3://bucketkops/los
-      # - aws s3 ls
-      #  - aws s3 sync --ignore-existing . s3://bucketkops/los
-      # - aws s3 sync . s3://bucketkops/los
-      # - aws s3 sync newdir s3://bucketkops/los
-      # - aws s3 cp --recursive . s3://bucketkops/los
+       - echo `pwd`
+       - aws s3 cp --no-overwrite s3://bucketkops/los
+      #- aws s3 ls
+      #- aws s3 sync --ignore-existing . s3://bucketkops/los
+      #- aws s3 sync . s3://bucketkops/los
+      #- aws s3 sync newdir s3://bucketkops/los
+      #- aws s3 cp --recursive . s3://bucketkops/los
       #- echo Build started on `date`
       #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
