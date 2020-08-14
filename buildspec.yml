@@ -31,6 +31,7 @@ phases:
         #fi      
   build:
     commands:
+       - git show --pretty="" --name-only 672ae5a0085f0446522be5eef05f086bf51033e7
        - aws s3 ls
        - aws s3 cp --recursive . s3://bucketkops/los 
       #- echo Build started on `date`
