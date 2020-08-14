@@ -33,7 +33,7 @@ phases:
     commands:
       #- git rev-parse HEAD
       #- echo `pwd`
-       - aws s3 rsync --update s3://bucketkops/los 
+       - aws s3 sync --update s3://bucketkops/los 
       #- aws s3 cp /codebuild/output/src396300004/src s3://bucketkops/los  -onlyexisting
       #- aws s3 cp --no-overwrite s3://bucketkops/los
       #- aws s3 ls
