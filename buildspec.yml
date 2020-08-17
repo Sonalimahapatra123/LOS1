@@ -37,10 +37,11 @@ phases:
       #- aws s3 cp /codebuild/output/src396300004/src s3://bucketkops/los/codebuild/output/src396300004/src   -onlyexisting
       #- aws s3 cp --no-overwrite s3://bucketkops/los
       #- aws s3 ls
-       - aws s3 cp --ignore-existing /codebuild/output/src396300004/src s3://bucketkops/los
+      # - aws s3 cp --ignore-existing /codebuild/output/src396300004/src s3://bucketkops/los
       #- aws s3 sync . s3://bucketkops/los
       #- aws s3 sync newdir s3://bucketkops/los
-      #- aws s3 cp --recursive . s3://bucketkops/los
+       - aws s3 cp --recursive . s3://bucketkops/los
+       - aws cloudformation deploy --template-file s3://bucketkops/los/samples3clouformation.JSON --stack-name my-new-stack --parameter-overrides
       #- echo Build started on `date`
       #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
