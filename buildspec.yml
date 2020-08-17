@@ -41,7 +41,7 @@ phases:
       #- aws s3 sync . s3://bucketkops/los
       #- aws s3 sync newdir s3://bucketkops/los
        - aws s3 cp --recursive . s3://bucketkops/los
-       - aws cloudformation deploy --template-file s3://bucketkops/los/samples3clouformation.JSON --stack-name my-new-stack -new-stack --parameter-overrides Key1=samples3clouformation.JSON
+       - aws cloudformation deploy --template-file s3://bucketkops/los/samples3clouformation.JSON --stack-name los-NodeJs --parameter-overrides Key1=samples3clouformation.JSON
       #- echo Build started on `date`
       #- echo Building the Docker image... 
       #- appVersion=$(cat version.txt )
